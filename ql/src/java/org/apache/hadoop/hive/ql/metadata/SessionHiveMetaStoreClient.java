@@ -648,14 +648,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   private org.apache.hadoop.hive.metastore.api.Table getTempTable(String dbName, String tableName)
       throws MetaException {
-    String parsedDbName = MetaStoreUtils.parseDbName(dbName, conf)[1];
-    if (parsedDbName == null) {
+    if (dbName == null) {
       throw new MetaException("Db name cannot be null");
     }
     if (tableName == null) {
       throw new MetaException("Table name cannot be null");
     }
-    Map<String, Table> tables = getTempTablesForDatabase(parsedDbName.toLowerCase(),
+    Map<String, Table> tables = getTempTablesForDatabase(dbName.toLowerCase(),
         tableName.toLowerCase());
     if (tables != null) {
       Table table = tables.get(tableName.toLowerCase());
@@ -1356,7 +1355,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   @Override
   public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) throws TException {
-    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDb_name(), req.getTbl_name());
+    String parsedDbName = MetaStoreUtils.parseDbName(req.getDb_name(), conf)[1];
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(parsedDbName, req.getTbl_name());
     if (table == null) {
       //(assume) not a temp table - Try underlying client
       return super.getPartitionsByNames(req);
